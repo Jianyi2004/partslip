@@ -1,7 +1,7 @@
 import os
 import torch
 import json
-from pytorch3d.io import IO
+from pytorch3d.io import IO # 读取点云
 import numpy as np
 from src.utils import normalize_pc
 from src.render_pc import render_pc
@@ -12,11 +12,11 @@ from src.bbox2seg import bbox2seg
 def Infer(input_pc_file, category, part_names, zero_shot=False, save_dir="tmp"):
     if zero_shot:
         config ="GLIP/configs/glip_Swin_L.yaml"
-        weight_path = "models/glip_large_model.pth"
+        weight_path = "/data_all/intern10/models/glip_large_model.pth"
         print("-----Zero-shot inference of %s-----" % input_pc_file)
     else:
         config ="GLIP/configs/glip_Swin_L_pt.yaml"
-        weight_path = "models/%s.pth" % category
+        weight_path = "/data_all/intern10/models/%s.pth" % category
         print("-----Few-shot inference of %s-----" % input_pc_file)
         
     print("[loading GLIP model...]")
@@ -26,8 +26,10 @@ def Infer(input_pc_file, category, part_names, zero_shot=False, save_dir="tmp"):
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
         torch.cuda.set_device(device)
+        print("Use gpu")
     else:
         device = torch.device("cpu")
+        print("Use cpu")
     io = IO()
     os.makedirs(save_dir, exist_ok=True)
     
@@ -52,5 +54,5 @@ if __name__ == "__main__":
     partnete_meta = json.load(open("PartNetE_meta.json")) 
     for ins in ["Chair", "Suitcase", "Refrigerator", "Lamp", "Kettle"]:   
         Infer('examples/%s.ply' % ins, ins, partnete_meta[ins], zero_shot=True, save_dir='examples/zeroshot_%s' % ins)
-        Infer('examples/%s.ply' % ins, ins, partnete_meta[ins], zero_shot=False, save_dir='examples/fewshot_%s' % ins)
+        # Infer('examples/%s.ply' % ins, ins, partnete_meta[ins], zero_shot=False, save_dir='examples/fewshot_%s' % ins)
         
